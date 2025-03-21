@@ -1,0 +1,40 @@
+#3613   * Remove `--from` requirement for `close-chain` cmd.
+
+Change the CLI to always expect the chain ID without the flag name.
+
+* Cache the command binary path in `ClientWrapper`
+
+Avoid resolving the binary path every time the command needs to be
+executed, and prepare to have the path available for a synchronous call
+inside a `Drop` implementation.
+
+* Add a `linera wallet show --short` option
+
+Print a simple formatted list of chains in the wallet.
+
+* Refactor to add a `command_arguments` helper
+
+Prepare to be able to get all the common arguments in the synchronous
+`Drop` implementation.
+
+* Create an `OnClientDrop` helper enumeration
+
+An option to configure if chains should be closed when the
+`ClientWrapper` is dropped.
+
+* Add a `ClientWrapper::close_chain_on_drop` config.
+
+Allow configuring if all chains should be closed when the client
+finishes.
+
+* Close chains when `ClientWrapper` is dropped
+
+List all chains in the wallet and close them one by one.
+
+* Drop the clients in separate threads
+
+It's not possible to know which client will have the round to be able to
+close the shared chain, so both clients must run in parallel (not in
+separate asynchronous tasks, because the `Drop` is blocking) so that the
+one that has the round can actually close it and unblock the other
+client.
